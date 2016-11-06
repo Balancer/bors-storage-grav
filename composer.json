@@ -1,0 +1,22 @@
+{
+	"name": "balancer/bors-storage-grav",
+	"description": "Use GRAV pages as BORS© backend",
+	"license": "GPLv3",
+
+	"authors": [
+		{
+			"name": "Balancer",
+			"email": "balancer@balancer.ru"
+		}
+	],
+
+	"require": {
+		"balancer/bors-core": "*"
+	},
+
+	"autoload": {
+		"psr-4": {
+			"B2\\Grav": "src"
+		}
+	}
+}
