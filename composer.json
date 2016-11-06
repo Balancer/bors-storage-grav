@@ -16,7 +16,7 @@
 
 	"autoload": {
 		"psr-4": {
-			"B2\\Grav": "src"
+			"B2\\Grav\\": "src"
 		}
 	}
 }
