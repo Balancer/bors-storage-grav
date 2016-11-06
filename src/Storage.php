@@ -15,34 +15,24 @@ class Storage extends \bors_storage
 
 	private function __find($object)
 	{
-		$dir = $this->grav_root();
+		$basepath = ltrim($object->b2_basepath(), '/');
+		$root = $this->grav_root();
 		$base = $object->_basename();
 
-		if(preg_match('/\.php$/', $base)) // Хардкод, но что делать? :-/
-			return false;
+		if($basepath)
+			$rel_path = "{$basepath}/$base";
+		else
+			$rel_path = "{$base}";
 
-		$rel = secure_path(str_replace(bors()->server()->root(), '/', $dir));
-
-		if(is_file($file = "{$dir}/{$base}.md"))
+		if(is_file($file = "{$root}/user/pages/$rel_path/default.md"))
 			return $file;
 
-		if(is_file($file = "{$dir}/$base/main.md"))
-			return $file;
+		$dirs = glob("$root/user/pages/*.$rel_path");
 
-		if(is_file($file = "{$dir}/$base/index.md"))
-			return $file;
-
-		foreach(bors_dirs() as $d)
-		{
-			if(is_file($file = secure_path("{$d}/webroot/{$rel}/{$base}/main.md")))
+//		dump("$root/user/pages/*.$rel_path", $dirs);
+		foreach($dirs as $d)
+			if(is_file($file = "{$d}/default.md"))
 				return $file;
-
-			if(is_file($file = secure_path("{$d}/webroot/{$rel}/{$base}/index.md")))
-				return $file;
-
-			if(is_file($file = secure_path("{$d}/webroot/{$rel}/{$base}.md")))
-				return $file;
-		}
 
 		return false;
 	}
@@ -70,27 +60,25 @@ class Storage extends \bors_storage
 		{
 			// Hard test:
 			if(!class_exists('Symfony\Component\Yaml\Yaml'))
-				throw new Exception("Can't find yaml extension or Symfony\Component\Yaml.\nGo to composer directory at BORS_CORE level and execute\ncomposer require symfony/yaml=*");
+				throw new \Exception("Can't find yaml extension or Symfony\Component\Yaml.\nGo to composer directory at BORS_CORE level and execute\ncomposer require symfony/yaml=*");
 
 			$content = $m[2];
 			try
 			{
-				$data = bors_data_yaml::parse($m[1]);
+				$data = \bors_data_yaml::parse($m[1]);
 			}
-			catch(Exception $e)
+			catch(\Exception $e)
 			{
-				bors_debug::syslog('error-yaml-parse', "Error in $file: " . blib_exception::factory($e)->message());
+				\bors_debug::syslog('error-yaml-parse', "Error in $file: " . \blib_exception::factory($e)->message());
 				return $object->set_is_loaded(false);
 			}
 
-			foreach(array(
-					'Date' => array(
-						'create_time',
-						'strtotime'
-					),
-					'Config' => 'config_class',
-					'Theme' => 'theme_class',
-			) as $md => $field)
+			foreach([
+				'date' => [
+					'create_time',
+					'strtotime'
+				],
+			] as $md => $field)
 			{
 				if(!empty($data[$md]))
 				{
@@ -111,20 +99,23 @@ class Storage extends \bors_storage
 			}
 		}
 
-		if(preg_match('/^#\s+(.+?)\s+#$/m', $content, $m))
+		if(!$object->title_true())
 		{
-			$object->set_title($m[1], false);
-			$content = preg_replace('/^#\s+(.+?)\s+#$/m', '', $content);
-		}
-		elseif(preg_match('/^#\s+(.+)$/m', $content, $m))
-		{
-			$object->set_title($m[1], false);
-			$content = preg_replace('/^#\s+(.+)$/m', '', $content);
-		}
-		elseif(preg_match("/(^|\n)(.+?)\n(=+)\n/s", $content, $m))
-		{
-			$object->set_title($m[2], false);
-			$content = preg_replace("/(^|\n)(.+?)\n(=+)\n/", '', $content, 1);
+			if(preg_match('/^#\s+(.+?)\s+#$/m', $content, $m))
+			{
+				$object->set_title($m[1], false);
+				$content = preg_replace('/^#\s+(.+?)\s+#$/m', '', $content);
+			}
+			elseif(preg_match('/^#\s+(.+)$/m', $content, $m))
+			{
+				$object->set_title($m[1], false);
+				$content = preg_replace('/^#\s+(.+)$/m', '', $content);
+			}
+			elseif(preg_match("/(^|\n)(.+?)\n(=+)\n/s", $content, $m))
+			{
+				$object->set_title($m[2], false);
+				$content = preg_replace("/(^|\n)(.+?)\n(=+)\n/", '', $content, 1);
+			}
 		}
 
 		if(!$object->title_true())
