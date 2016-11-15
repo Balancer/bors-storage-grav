@@ -91,6 +91,23 @@ class Storage extends \bors_storage
 				}
 			}
 
+			if(!empty($data['metadata']))
+			{
+				foreach([
+					'Nav' => 'nav_name',
+				] as $md => $field)
+				{
+					if(!empty($data['metadata'][$md]))
+					{
+						if(is_array($field))
+							$data[$field[0]] = call_user_func($field[1], $data['metadata'][$md]);
+						else
+							$data[$field] = $data['metadata'][$md];
+
+					}
+				}
+			}
+
 			foreach($data as $key => $value)
 			{
 				$object->set_attr($key, $value);
