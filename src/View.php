@@ -10,6 +10,17 @@ class View extends \B2\Page
 
 	function storage_engine() { return Storage::class; }
 
+	function url_ex($foo) { return $this->url(); }
+
+	function url()
+	{
+		$url = $this->source_file();
+		$url = preg_replace('/^'.preg_quote('/var/www/bionco.ru/grav/user/pages/','/').'/', '/', $url);
+		$url = preg_replace('!^/(\d+\.)!', '/', $url);
+		$url = preg_replace('!/default\.md$!', '/', $url);
+		return $url;
+	}
+
 	function pre_show()
 	{
 		// Если путь не оканчивается на слеш, редиректим. Иначе могут быть проблемы с относительными путями.

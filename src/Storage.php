@@ -110,9 +110,19 @@ class Storage extends \bors_storage
 
 			foreach($data as $key => $value)
 			{
-				$object->set_attr($key, $value);
+				$object->set_attr(bors_lower($key), $value);
 				// Хм. Атрибуты не всегда работают.
-				$object->set($key, $value, false);
+				$object->set(bors_lower($key), $value, false);
+			}
+
+			if(!empty($data['metadata']))
+			{
+				foreach($data['metadata'] as $key => $value)
+				{
+					$object->set_attr(bors_lower($key), $value);
+					// Хм. Атрибуты не всегда работают.
+					$object->set(bors_lower($key), $value, false);
+				}
 			}
 		}
 
@@ -146,6 +156,7 @@ class Storage extends \bors_storage
 //		$content = 
 
 		$object->set_source($content, false);
+		$object->set_attr('source_file', $file);
 
 		return $object->set_is_loaded(true);
 	}
