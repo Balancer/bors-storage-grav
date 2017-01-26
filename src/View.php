@@ -15,7 +15,7 @@ class View extends \B2\Page
 	function url()
 	{
 		$url = $this->source_file();
-		$url = preg_replace('/^'.preg_quote('/var/www/bionco.ru/grav/user/pages/','/').'/', '/', $url);
+		$url = preg_replace('/^'.preg_quote($this->storage()->grav_root().'/user/pages/','/').'/', '/', $url);
 		$url = preg_replace('!^/(\d+\.)!', '/', $url);
 		$url = preg_replace('!/default\.md$!', '/', $url);
 		return $url;
@@ -47,6 +47,46 @@ class View extends \B2\Page
 		// Пока в Michelf\Markdown нельзя задавать классы таблиц:
 		$html = str_replace("<table>", "<table class=\"{$this->layout()->table_class()}\">", $html);
 		return $html;
+	}
+
+	function image()
+	{
+		// ![](/events/opera_2016-11-21_10-07-30.png)
+
+//		if(!preg_match('/!  \[\] \( (.+?) \)/x', $this->source(), $m))
+		if(!preg_match('/!  \[ [^\]]* \] \( ([^\) ]+) [^\)]*? \)/x', $this->source(), $m))
+			return NULL;
+
+		return \bors_image_simplest::load($m[1]);
+	}
+
+	function date_interval()
+	{
+		return \bors_lib_date::interval(strtotime($this->get('begin')), strtotime($this->get('end')));
+	}
+
+	function card_pre_title()
+	{
+		$place = [];
+		$place[] = $this->get('place');
+		$place[] = $this->get('city');
+		$place[] = $this->get('country');
+		$place = join(", ", array_filter($place));
+		if($place)
+			$place = ". $place";
+		return '<div class="text-muted"><b>'.($this->date_interval()).$place.'</b></div>';
+	}
+
+	function snippet($size = 200)
+	{
+		$text = $this->body();
+		$text = str_replace('>', '> ', $text);
+		$text = strip_tags($text);
+		$text = str_replace("\n", " ", $text);
+		$text = preg_replace("/\s{2,}/", ' ', $text);
+		$text = str_replace('… …', '…', $text);
+		$text = \blib_string::wordwrap($text, 32, ' ', true);
+		return \B2\Hypher::hyphenate(clause_truncate_ceil($text, $size));
 	}
 
 	static function __unit_test($suite)

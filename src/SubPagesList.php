@@ -73,6 +73,8 @@ class SubPagesList extends \B2\Page
 			$pages[] = $page;
 		}
 
+		return \B2\Layout\Bootstrap3\Cards::mod_html(['items' => $pages]);
+
 		$result = [];
 
 		foreach($pages as $page)
