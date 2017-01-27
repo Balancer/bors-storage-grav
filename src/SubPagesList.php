@@ -4,6 +4,8 @@ namespace B2\Grav;
 
 class SubPagesList extends \B2\Page
 {
+	var $grav_class = View::class;
+
 	//TODO: на время отладки
 	function can_cached() { return false; }
 	function can_be_empty() { return false; }
@@ -62,16 +64,19 @@ class SubPagesList extends \B2\Page
 		return $html;
 	}
 
-	static function b2_markup_plugin_list($grav)
+	static function b2_markup_plugin_list($grav, $filter = NULL)
 	{
 		$sub_pages = glob(dirname($grav->get('source_file')).'/*/*.md');
 		$pages = [];
 		foreach($sub_pages as $md_file)
 		{
-			$page = \B2\Grav\View::load($md_file);
+			$page = call_user_func([bors_foo(get_called_class())->grav_class(), 'load'], $md_file);
 //			var_dump($page->source_file(), $page->url(), $page->titled_link());
 			$pages[] = $page;
 		}
+
+		if($filter)
+			$pages = $filter($pages);
 
 		return \B2\Layout\Bootstrap3\Cards::mod_html(['items' => $pages]);
 
