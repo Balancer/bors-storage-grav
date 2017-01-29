@@ -4,6 +4,8 @@ namespace B2\Grav;
 
 class Storage extends \bors_storage
 {
+	var $skip_b2_fields_autoconf = true;
+
 	function grav_root()
 	{
 		$grav_root = \B2\Cfg::get('grav.root');
@@ -159,5 +161,49 @@ class Storage extends \bors_storage
 		$object->set_attr('source_file', $file);
 
 		return $object->set_is_loaded(true);
+	}
+
+	function load_array($class_name, $where)
+	{
+		if(is_object($class_name))
+			$class_name = $class_name->class_name();
+
+//		dump($where);
+
+		$foo = bors_foo($class_name);
+		$base_path = $foo->grav_root().'/user/pages';
+		$rel = $foo->rel_path();
+		$rel_s = explode('/', trim($rel, '/'));
+
+		if($g = glob("{$base_path}/[0-9][0-9].{$rel_s[0]}"))
+			$path = $g[0].'/'.join('/', array_slice($rel_s, 1));
+		elseif(file_exists($d = "{$base_path}/{$rel_s[0]}"))
+			$path = $d.'/'.join('/', array_slice($rel_s, 1));
+		else
+			$path = 'foo';
+
+		$dir = new \RecursiveDirectoryIterator($path);
+		$it  = new \RecursiveIteratorIterator($dir);
+		$files = new \RegexIterator($it, '/^.+\.md$/i', \RecursiveRegexIterator::GET_MATCH);
+
+		$objects = [];
+
+		foreach($files as $x)
+		{
+			$md_file = $x[0];
+//			dump($md_file);
+			$grav = call_user_func([$class_name, 'load'], $md_file);
+			$objects[] = $grav;
+		}
+
+//		if($filter)
+//			$pages = $filter($pages);
+
+//		return \B2\Layout\Bootstrap3\Cards::mod_html(['items' => $pages]);
+
+
+//		dump($objects);
+//		exit();
+		return $objects;
 	}
 }
