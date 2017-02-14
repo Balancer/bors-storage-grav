@@ -206,4 +206,103 @@ class Storage extends \bors_storage
 //		exit();
 		return $objects;
 	}
+
+/*
+---
+title: 'Индекс Карновского/Шкала ECOG-ВОЗ'
+date: '11:22 06-02-2017'
+taxonomy:
+    tag:
+        - 'Индекс Карновского'
+        - 'Шкала ECOG-ВОЗ'
+---
+
+Общее состояние онкологических больных рекомендовано оценивать по индексу Карновского (0-100%) или Шкале ECOG-ВОЗ (0-4 балла).
+*/
+
+	function create($model)
+	{
+		$path = $model->id();
+		$base_path = $model->grav_root().'/user/pages';
+
+		$nav = $model->title() != $model->nav_name() ? $model->nav_name() : NULL;
+
+		$data = [
+			'title' => $model->title(),
+			'date' => date('r', $model->create_time()),
+//			'taxonomy' => [
+//				'tag' => $model->keywords(),
+//			],
+			'metadata' => [
+				'Nav' =>  $nav,
+			],
+		];
+
+		$data = array_filter_recursive($data);
+
+		$yaml = \Symfony\Component\Yaml\Yaml::dump($data);
+
+		$text = $model->source();
+
+		$text = str_replace("\r", "", $text);
+
+		$text = preg_replace('!\[([^]]+)\|(.+)\]!', '[$2]($1)', $text);
+
+		$text = preg_replace_callback('!^\s*(=+)\s*(.+?)\s*(=+)\s*$!m', function($m) { return str_repeat('#', strlen($m[1])).' '.$m[2]."\n"; }, $text);
+
+		$text = preg_replace('!\*(.+?)\*!', '**$1**', $text);
+
+		if(class_exists(\lcml_tag_pair_csv::class))
+		{
+			$params = [];
+			$text = preg_replace_callback('!\[csv\](.+?)\[/csv\]!s', function($m) {
+				$html = \lcml_tag_pair_csv::html($m[1], $params);
+
+				$html = str_replace(' width="auto"', ' ', $html);
+				$html = str_replace(' style="width:auto!important"', '', $html);
+				$html = str_replace('<table >', '<table>', $html);
+				$html = str_replace('<table>', '<table class="table table-striped table-bordered table-condensed">', $html);
+
+				$html = preg_replace('!(<table.+?)(<tr>\s*<th>.+?</tr>)(.+?</table>)!s', '$1<thead>$2</thead><tbody>$3</tbody></table>', $html);
+
+
+				if(class_exists(\Gajus\Dindent\Indenter::class))
+				{
+					$indenter = new \Gajus\Dindent\Indenter();
+					$html = $indenter->indent($html);
+				}
+
+				return $html;
+			}, $text);
+		}
+
+
+		$grav_text = "---\n".trim($yaml)."\n---\n\n" . $text;
+
+		$file = $base_path . '/' . trim($path, '/') . '/default.md';
+
+		if(file_exists($file) && !$model->get('__can_export_overwrite'))
+			throw new \Exception(sprimtf(_("File '%s' already exists"), $file));
+
+//		dump($file, $grav);
+//		exit();
+		mkpath(dirname($file), 0777);
+		file_put_contents($file, $grav_text);
+	}
+}
+
+if(!function_exists('array_filter_recursive'))
+{
+	function array_filter_recursive($input)
+	{
+		foreach ($input as &$value)
+		{
+			if(is_array($value))
+			{
+				$value = array_filter_recursive($value);
+			}
+		}
+
+		return array_filter($input); 
+	}
 }
