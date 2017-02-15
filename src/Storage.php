@@ -159,6 +159,7 @@ class Storage extends \bors_storage
 
 		$object->set_source($content, false);
 		$object->set_attr('source_file', $file);
+		$object->set_modify_time(filemtime($file));
 
 		return $object->set_is_loaded(true);
 	}
@@ -181,6 +182,8 @@ class Storage extends \bors_storage
 			$path = $d.'/'.join('/', array_slice($rel_s, 1));
 		else
 			$path = 'foo';
+
+		$path = rtrim($path, '/');
 
 		$dir = new \RecursiveDirectoryIterator($path);
 		$it  = new \RecursiveIteratorIterator($dir);
@@ -233,9 +236,10 @@ taxonomy:
 //			'taxonomy' => [
 //				'tag' => $model->keywords(),
 //			],
-			'metadata' => [
-				'Nav' =>  $nav,
-			],
+//			'metadata' => [
+//				'Nav' =>  $nav,
+//			],
+			'menu' => $nav,
 		];
 
 		$data = array_filter_recursive($data);
@@ -250,7 +254,6 @@ taxonomy:
 
 		$text = preg_replace_callback('!^\s*(=+)\s*(.+?)\s*(=+)\s*$!m', function($m) { return str_repeat('#', strlen($m[1])).' '.$m[2]."\n"; }, $text);
 
-		$text = preg_replace('!\*(.+?)\*!', '**$1**', $text);
 
 		if(class_exists(\lcml_tag_pair_csv::class))
 		{
@@ -263,8 +266,7 @@ taxonomy:
 				$html = str_replace('<table >', '<table>', $html);
 				$html = str_replace('<table>', '<table class="table table-striped table-bordered table-condensed">', $html);
 
-				$html = preg_replace('!(<table.+?)(<tr>\s*<th>.+?</tr>)(.+?</table>)!s', '$1<thead>$2</thead><tbody>$3</tbody></table>', $html);
-
+//				$html = preg_replace('!(<table.+?)(<tr>\s*<th.+?</tr>)(.+?</table>)!s', '$1<thead>$2</thead><tbody>$3</tbody></table>', $html);
 
 				if(class_exists(\Gajus\Dindent\Indenter::class))
 				{
@@ -276,6 +278,7 @@ taxonomy:
 			}, $text);
 		}
 
+		$text = preg_replace('!\*(.+?)\*!', '**$1**', $text);
 
 		$grav_text = "---\n".trim($yaml)."\n---\n\n" . $text;
 
@@ -288,6 +291,11 @@ taxonomy:
 //		exit();
 		mkpath(dirname($file), 0777);
 		file_put_contents($file, $grav_text);
+	}
+
+	function each($class_name, $where)
+	{
+		return bors_find_all($class_name, $where);
 	}
 }
 

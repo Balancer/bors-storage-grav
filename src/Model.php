@@ -8,12 +8,18 @@ class Model extends \B2\Model
 
 	function storage_engine() { return Storage::class; }
 
+	function _host_def() { return ''; }
+
 	function url()
 	{
 		$url = $this->source_file();
 		$url = preg_replace('/^'.preg_quote($this->grav_root().'/user/pages/','/').'/', '/', $url);
 		$url = preg_replace('!^/(\d+\.)!', '/', $url);
 		$url = preg_replace('!/default\.md$!', '/', $url);
+
+		if($host = $this->host())
+			$url = "http://$host$url";
+
 		return $url;
 	}
 
