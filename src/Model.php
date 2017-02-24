@@ -53,4 +53,6 @@ class Model extends \B2\Model
 		$text = \blib_string::wordwrap($text, 32, ' ', true);
 		return \B2\Hypher::hyphenate(clause_truncate_ceil($text, $size));
 	}
+
+	function keywords() { return @$this->attr['taxonomy']['tag']; }
 }
