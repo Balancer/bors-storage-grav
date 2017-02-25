@@ -181,9 +181,12 @@ class Storage extends \bors_storage
 		elseif(file_exists($d = "{$base_path}/{$rel_s[0]}"))
 			$path = $d.'/'.join('/', array_slice($rel_s, 1));
 		else
-			$path = 'foo';
+			throw new \Exception("Not found grav base dir '$rel' at base dir '$base_path'");
 
 		$path = rtrim($path, '/');
+
+		if(!is_dir($path))
+			throw new \Exception("Grav directory '$path' not exists");
 
 		$dir = new \RecursiveDirectoryIterator($path);
 		$it  = new \RecursiveIteratorIterator($dir);
