@@ -159,7 +159,7 @@ class Storage extends \bors_storage
 
 		$object->set_source($content, false);
 		$object->set_attr('source_file', $file);
-		$object->set_modify_time(filemtime($file));
+		$object->set_attr('modify_time', filemtime($file));
 
 		return $object->set_is_loaded(true);
 	}
