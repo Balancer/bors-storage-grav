@@ -39,7 +39,7 @@ class Storage extends \bors_storage
 		return false;
 	}
 
-	function load($object)
+	function load_object($object)
 	{
 		if(file_exists($object->id()))
 			$file = $object->id();
@@ -226,7 +226,7 @@ taxonomy:
 Общее состояние онкологических больных рекомендовано оценивать по индексу Карновского (0-100%) или Шкале ECOG-ВОЗ (0-4 балла).
 */
 
-	function create($model)
+	function create_object($model)
 	{
 		$path = $model->id();
 		$base_path = $model->grav_root().'/user/pages';
@@ -296,7 +296,7 @@ taxonomy:
 		file_put_contents($file, $grav_text);
 	}
 
-	function each($class_name, $where)
+	static function each($class_name, $where)
 	{
 		return bors_find_all($class_name, $where);
 	}
