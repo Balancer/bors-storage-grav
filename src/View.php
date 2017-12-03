@@ -43,12 +43,14 @@ class View extends \B2\Page
 		return parent::_template_def();
 	}
 
-	function body()
+	function body_data()
 	{
 		$html = \Michelf\MarkdownExtra::defaultTransform($this->source());
 		// Пока в Michelf\Markdown нельзя задавать классы таблиц:
 		$html = str_replace("<table>", "<table class=\"{$this->layout()->table_class()}\">", $html);
-		return $html;
+		return array_merge(parent::body_data(), [
+			'grav_body_html' => $html,
+		]);
 	}
 
 	function image()

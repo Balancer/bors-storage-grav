@@ -14,7 +14,7 @@ class SubPagesList extends \B2\Page
 
 	function pre_show()
 	{
-		$this->b2_app()->debug();
+		$this->app()->debug();
 		// Если путь не оканчивается на слеш, редиректим. Иначе могут быть проблемы с относительными путями.
 		if(bors()->request()->url_match('![^/]$!'))
 			return go($this->url().'/');
