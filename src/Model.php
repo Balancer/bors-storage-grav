@@ -55,4 +55,15 @@ class Model extends \B2\Model
 	}
 
 	function keywords() { return @$this->attr['taxonomy']['tag']; }
+
+	function slug()
+	{
+		$path = rtrim(dirname($this->source_file()). '/');
+		return basename($path);
+	}
+
+	function modify_time()
+	{
+		return filemtime($this->source_file());
+	}
 }
