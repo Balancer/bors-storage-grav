@@ -208,8 +208,12 @@ class Storage extends \bors_storage
 //		return \B2\Layout\Bootstrap3\Cards::mod_html(['items' => $pages]);
 
 
-//		dump($objects);
+//		dump($grav);
 //		exit();
+
+		if(method_exists($grav, 'sort_callback'))
+			$grav->sort_callback($objects);
+
 		return $objects;
 	}
 

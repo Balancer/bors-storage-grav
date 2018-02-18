@@ -78,6 +78,10 @@ class SubPagesList extends \B2\Page
 		if($filter)
 			$pages = $filter($pages);
 
+		$called_class = get_called_class();
+		if(method_exists($called_class, 'sort_callback'))
+			$pages = call_user_func([$called_class, 'sort_callback'], $pages);
+
 		return \B2\Layout\Bootstrap3\Cards::mod_html(['items' => $pages]);
 
 		$result = [];
